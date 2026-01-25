@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation"
 
 export default function CreateStore() {
     const router = useRouter()
+
     const [storeName, setStoreName] = useState("")
     const [subdomain, setSubdomain] = useState("")
+    const [loading, setLoading] = useState(false)
 
     const createStore = async () => {
         if (!storeName || !subdomain) {
@@ -15,8 +17,11 @@ export default function CreateStore() {
             return
         }
 
+        setLoading(true)
+
         const { data: auth } = await supabase.auth.getUser()
         if (!auth.user) {
+            setLoading(false)
             router.push("/")
             return
         }
@@ -27,6 +32,8 @@ export default function CreateStore() {
             subdomain: subdomain.toLowerCase(),
         })
 
+        setLoading(false)
+
         if (error) {
             alert(error.message)
             return
@@ -36,24 +43,59 @@ export default function CreateStore() {
     }
 
     return (
-        <div style={{ padding: 40 }}>
-            <h1>Create Store</h1>
+        <main className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+                <h1 className="text-2xl font-bold mb-2 text-center">
+                    Create Store
+                </h1>
 
-            <input
-                placeholder="Store Name"
-                value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
-            />
-            <br /><br />
+                <p className="text-gray-500 text-center mb-6">
+                    Set up a new store with a unique subdomain
+                </p>
 
-            <input
-                placeholder="Subdomain (unique)"
-                value={subdomain}
-                onChange={(e) => setSubdomain(e.target.value)}
-            />
-            <br /><br />
+                <div className="space-y-4">
+                    {/* Store Name */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Store Name
+                        </label>
+                        <input
+                            placeholder="My Awesome Store"
+                            value={storeName}
+                            onChange={(e) => setStoreName(e.target.value)}
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        />
+                    </div>
 
-            <button onClick={createStore}>Create Store</button>
-        </div>
+                    {/* Subdomain */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            Subdomain
+                        </label>
+                        <input
+                            placeholder="mystore"
+                            value={subdomain}
+                            onChange={(e) => setSubdomain(e.target.value.toLowerCase())}
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Your store will be available at:{" "}
+                            <span className="font-medium">
+                                {subdomain || "yourstore"}.yourapp.com
+                            </span>
+                        </p>
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                        onClick={createStore}
+                        disabled={loading}
+                        className="w-full py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition disabled:opacity-50"
+                    >
+                        {loading ? "Creating store..." : "Create Store"}
+                    </button>
+                </div>
+            </div>
+        </main>
     )
 }

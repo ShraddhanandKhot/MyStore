@@ -8,6 +8,7 @@ export default function Dashboard() {
     const router = useRouter()
     const [profile, setProfile] = useState<any>(null)
     const [stores, setStores] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         const loadData = async () => {
@@ -31,49 +32,88 @@ export default function Dashboard() {
 
             setProfile(profileData)
             setStores(storeData || [])
+            setLoading(false)
         }
 
         loadData()
-    }, [])
+    }, [router])
 
-    if (!profile) return <p>Loading...</p>
+    if (loading) {
+        return (
+            <main className="min-h-screen flex items-center justify-center bg-gray-100">
+                <p className="text-gray-500">Loading dashboard...</p>
+            </main>
+        )
+    }
 
     return (
-        <div style={{ padding: 40 }}>
-            <h1>Dashboard</h1>
+        <main className="min-h-screen bg-gray-100 p-6">
+            <div className="max-w-6xl mx-auto">
 
-            <p><b>Username:</b> {profile.username || "Not set"}</p>
+                {/* Header */}
+                <div className="bg-white p-6 rounded-xl shadow mb-6 flex justify-between items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold">Dashboard</h1>
+                        <p className="text-gray-500">
+                            Welcome, {profile?.username || "User"}
+                        </p>
+                    </div>
 
-            <button onClick={() => router.push("/store/create")}>
-                Create Store
-            </button>
+                    <button
+                        onClick={async () => {
+                            await supabase.auth.signOut()
+                            router.push("/")
+                        }}
+                        className="px-4 py-2 rounded-lg border hover:bg-gray-100"
+                    >
+                        Logout
+                    </button>
+                </div>
 
-            <h2>Your Stores</h2>
+                {/* Actions */}
+                <div className="flex gap-4 mb-6">
+                    <button
+                        onClick={() => router.push("/store/create")}
+                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"
+                    >
+                        Create Store
+                    </button>
 
-            {stores.length === 0 && <p>No stores created yet</p>}
+                    <button
+                        onClick={() => router.push("/store/items")}
+                        className="px-4 py-2 border rounded-lg hover:bg-gray-100 transition"
+                    >
+                        Add Item
+                    </button>
+                </div>
 
-            <ul>
-                {stores.map((store) => (
-                    <li key={store.id}>
-                        {store.store_name} — <b>{store.subdomain}.yourapp.com</b>
-                    </li>
-                ))}
-            </ul>
+                {/* Stores */}
+                <div className="bg-white p-6 rounded-xl shadow">
+                    <h2 className="text-xl font-semibold mb-4">Your Stores</h2>
 
-            <br />
-            <button onClick={() => router.push("/store/items")}>
-                Add Item
-            </button>
+                    {stores.length === 0 ? (
+                        <p className="text-gray-500">No stores created yet.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            {stores.map((store) => (
+                                <div
+                                    key={store.id}
+                                    className="border rounded-lg p-4 hover:shadow transition"
+                                >
+                                    <h3 className="font-semibold text-lg">
+                                        {store.store_name}
+                                    </h3>
 
-            <button
-                onClick={async () => {
-                    await supabase.auth.signOut()
-                    router.push("/")
-                }}
-            >
-                Logout
-            </button>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {store.subdomain}.yourapp.com
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-        </div>
+            </div>
+        </main>
     )
 }
