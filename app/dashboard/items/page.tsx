@@ -49,6 +49,23 @@ export default function ManageItems() {
         loadItems()
     }, [router])
 
+    async function deleteItem(itemId: string) {
+        const confirmDelete = confirm("Are you sure?")
+        if (!confirmDelete) return
+
+        const { error } = await supabase
+            .from("items")
+            .delete()
+            .eq("id", itemId)
+
+        if (error) {
+            alert(error.message)
+            return
+        }
+
+        setItems((prev) => prev.filter((item) => item.id !== itemId))
+    }
+
     if (loading) return <p className="p-6">Loading items...</p>
 
     return (
@@ -90,20 +107,5 @@ export default function ManageItems() {
         </main>
     )
 }
-async function deleteItem(itemId: string) {
-    const confirmDelete = confirm("Are you sure?")
-    if (!confirmDelete) return
 
-    const { error } = await supabase
-        .from("items")
-        .delete()
-        .eq("id", itemId)
 
-    if (error) {
-        alert(error.message)
-        return
-    }
-
-    setItems((prev) => prev.filter((item) => item.id !== itemId))
-}
-}
