@@ -41,9 +41,9 @@ export default function SignupPage() {
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-gray-100">
+        <main className="min-h-screen flex items-center justify-center bg-gray-100 text-black">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-                <h1 className="text-2xl font-bold text-center mb-2">
+                <h1 className="text-2xl font-bold text-center mb-2 text-gray-900">
                     Create Account
                 </h1>
 
@@ -56,7 +56,7 @@ export default function SignupPage() {
                         placeholder="Username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black placeholder:text-gray-500 bg-white"
                     />
 
                     <input
@@ -64,7 +64,7 @@ export default function SignupPage() {
                         placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black placeholder:text-gray-500 bg-white"
                     />
 
                     <input
@@ -72,13 +72,13 @@ export default function SignupPage() {
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black placeholder:text-gray-500 bg-white"
                     />
 
                     <button
                         onClick={signup}
                         disabled={loading}
-                        className="w-full py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition disabled:opacity-50"
+                        className="w-full py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition disabled:opacity-50 font-medium"
                     >
                         {loading ? "Creating account..." : "Create Account"}
                     </button>

@@ -43,9 +43,9 @@ export default function CreateStore() {
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-gray-100">
+        <main className="min-h-screen flex items-center justify-center bg-gray-100 text-black">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-                <h1 className="text-2xl font-bold mb-2 text-center">
+                <h1 className="text-2xl font-bold mb-2 text-center text-gray-900">
                     Create Store
                 </h1>
 
@@ -56,31 +56,31 @@ export default function CreateStore() {
                 <div className="space-y-4">
                     {/* Store Name */}
                     <div>
-                        <label className="block text-sm font-medium mb-1">
+                        <label className="block text-sm font-medium mb-1 text-gray-700">
                             Store Name
                         </label>
                         <input
                             placeholder="My Awesome Store"
                             value={storeName}
                             onChange={(e) => setStoreName(e.target.value)}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black placeholder:text-gray-500 bg-white"
                         />
                     </div>
 
                     {/* Subdomain */}
                     <div>
-                        <label className="block text-sm font-medium mb-1">
+                        <label className="block text-sm font-medium mb-1 text-gray-700">
                             Subdomain
                         </label>
                         <input
                             placeholder="mystore"
                             value={subdomain}
                             onChange={(e) => setSubdomain(e.target.value.toLowerCase())}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black placeholder:text-gray-500 bg-white"
                         />
                         <p className="text-xs text-gray-500 mt-1">
                             Your store will be available at:{" "}
-                            <span className="font-medium">
+                            <span className="font-medium text-gray-700">
                                 {subdomain || "yourstore"}.yourapp.com
                             </span>
                         </p>
@@ -90,7 +90,7 @@ export default function CreateStore() {
                     <button
                         onClick={createStore}
                         disabled={loading}
-                        className="w-full py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition disabled:opacity-50"
+                        className="w-full py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition disabled:opacity-50 font-medium"
                     >
                         {loading ? "Creating store..." : "Create Store"}
                     </button>

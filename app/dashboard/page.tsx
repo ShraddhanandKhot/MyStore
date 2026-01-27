@@ -40,20 +40,20 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <main className="min-h-screen flex items-center justify-center bg-gray-100">
+            <main className="min-h-screen flex items-center justify-center bg-gray-100 text-black">
                 <p className="text-gray-500">Loading dashboard...</p>
             </main>
         )
     }
 
     return (
-        <main className="min-h-screen bg-gray-100 p-6">
+        <main className="min-h-screen bg-gray-100 p-6 text-black">
             <div className="max-w-6xl mx-auto">
 
                 {/* Header */}
                 <div className="bg-white p-6 rounded-xl shadow mb-6 flex justify-between items-center">
                     <div>
-                        <h1 className="text-2xl font-bold">Dashboard</h1>
+                        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
                         <p className="text-gray-500">
                             Welcome, {profile?.username || "User"}
                         </p>
@@ -64,7 +64,7 @@ export default function Dashboard() {
                             await supabase.auth.signOut()
                             router.push("/")
                         }}
-                        className="px-4 py-2 rounded-lg border hover:bg-gray-100"
+                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
                     >
                         Logout
                     </button>
@@ -81,7 +81,7 @@ export default function Dashboard() {
 
                     <button
                         onClick={() => router.push("/store/items")}
-                        className="px-4 py-2 border rounded-lg hover:bg-gray-100 transition"
+                        className="px-4 py-2 bg-white text-black border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm font-medium"
                     >
                         Add Item
                     </button>
@@ -89,26 +89,44 @@ export default function Dashboard() {
 
                 {/* Stores */}
                 <div className="bg-white p-6 rounded-xl shadow">
-                    <h2 className="text-xl font-semibold mb-4">Your Stores</h2>
+                    <h2 className="text-xl font-semibold mb-4 text-gray-900">Your Stores</h2>
 
                     {stores.length === 0 ? (
                         <p className="text-gray-500">No stores created yet.</p>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                            {stores.map((store) => (
-                                <div
-                                    key={store.id}
-                                    className="border rounded-lg p-4 hover:shadow transition"
-                                >
-                                    <h3 className="font-semibold text-lg">
-                                        {store.store_name}
-                                    </h3>
+                            {stores.map((store) => {
+                                const isLocalhost = typeof window !== "undefined" &&
+                                    window.location.hostname.includes("localhost")
 
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        {store.subdomain}.yourapp.com
-                                    </p>
-                                </div>
-                            ))}
+                                const storeUrl = isLocalhost
+                                    ? `http://${store.subdomain}.localhost:3000`
+                                    : `https://${store.subdomain}.${window.location.hostname.replace(/^www\./, "")}`
+
+                                return (
+                                    <div
+                                        key={store.id}
+                                        className="border rounded-lg p-4 hover:shadow transition flex justify-between items-center"
+                                    >
+                                        <div>
+                                            <h3 className="font-semibold text-lg">
+                                                {store.store_name}
+                                            </h3>
+                                            <p className="text-sm text-gray-500">
+                                                {store.subdomain}
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            onClick={() => window.open(storeUrl, "_blank")}
+                                            className="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition"
+                                        >
+                                            Open Store
+                                        </button>
+                                    </div>
+                                )
+                            })}
+
                         </div>
                     )}
                 </div>

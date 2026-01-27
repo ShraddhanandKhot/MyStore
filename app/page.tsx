@@ -1,5 +1,7 @@
 import { getSubdomain } from "@/lib/getSubdomain"
 import { supabase } from "@/lib/supabaseClient"
+import { Store, ShoppingBag, ArrowRight, PackageOpen } from "lucide-react"
+import Link from "next/link"
 
 // Server Component
 export default async function Home() {
@@ -10,30 +12,36 @@ export default async function Home() {
      ====================================================== */
   if (!subdomain || subdomain === "localhost") {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-          <h1 className="text-3xl font-bold mb-4">
+      <main className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 p-6 relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
+
+        <div className="max-w-3xl text-center space-y-8">
+          <div className="mx-auto bg-black/5 p-4 rounded-2xl w-16 h-16 flex items-center justify-center">
+            <Store className="w-8 h-8" />
+          </div>
+
+          <h1 className="text-6xl font-bold bg-gradient-to-br from-zinc-900 to-zinc-500 bg-clip-text text-transparent">
             Store Platform
           </h1>
 
-          <p className="text-gray-600 mb-6">
-            Create your own online store with a custom subdomain.
+          <p className="text-xl text-zinc-600 max-w-xl mx-auto">
+            Create your own online store with a custom subdomain in minutes.
           </p>
 
-          <div className="flex gap-4 justify-center">
-            <a
+          <div className="flex justify-center gap-4">
+            <Link
               href="/login"
-              className="px-5 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition"
+              className="px-8 py-3 rounded-full bg-black text-white flex items-center gap-2"
             >
-              Login
-            </a>
+              Login <ArrowRight className="w-4 h-4" />
+            </Link>
 
-            <a
+            <Link
               href="/signup"
-              className="px-5 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+              className="px-8 py-3 rounded-full border"
             >
-              Signup
-            </a>
+              Create Account
+            </Link>
           </div>
         </div>
       </main>
@@ -44,68 +52,88 @@ export default async function Home() {
      SUBDOMAIN → STOREFRONT
      ====================================================== */
 
-  // Fetch store by subdomain
-  const { data: store, error: storeError } = await supabase
+  const { data: store } = await supabase
     .from("stores")
-    .select("id, store_name, subdomain")
+    .select("id, store_name")
     .eq("subdomain", subdomain)
     .single()
 
-  if (storeError || !store) {
+  if (!store) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h1 className="text-xl font-semibold">Store not found</h1>
-          <p className="text-gray-500 mt-2">
-            The store you are looking for does not exist.
-          </p>
-        </div>
+      <main className="min-h-screen flex items-center justify-center">
+        <h1 className="text-xl font-semibold">Store not found</h1>
       </main>
     )
   }
 
-  // Fetch store items
   const { data: items } = await supabase
     .from("items")
-    .select("id, image_url, created_at")
+    .select("id, image_url, name, description, price, created_at")
     .eq("store_id", store.id)
     .order("created_at", { ascending: false })
 
   return (
-    <main className="min-h-screen bg-gray-50 px-6 py-10">
-      {/* Store Header */}
-      <div className="max-w-6xl mx-auto mb-8">
-        <h1 className="text-3xl font-bold">
-          {store.store_name}
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Welcome to our store
-        </p>
-      </div>
+    <main className="min-h-screen bg-white text-zinc-900">
+      {/* Header */}
+      <header className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur border-b z-50">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center gap-4">
+          <div className="bg-zinc-900 text-white p-3 rounded-xl">
+            <ShoppingBag className="w-5 h-5" />
+          </div>
+          <h1 className="font-bold text-lg">{store.store_name}</h1>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="pt-32 pb-16 px-6 bg-zinc-50">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold mb-2">Latest Products</h2>
+          <p className="text-zinc-500">
+            Browse items available in this store.
+          </p>
+        </div>
+      </section>
 
       {/* Items */}
-      <div className="max-w-6xl mx-auto">
+      <section className="max-w-7xl mx-auto px-6 pb-32">
         {!items || items.length === 0 ? (
-          <p className="text-gray-500">
-            No items available in this store.
-          </p>
+          <div className="py-32 text-center text-zinc-500">
+            <PackageOpen className="mx-auto w-10 h-10 mb-4" />
+            No products yet
+          </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {items.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-lg shadow hover:shadow-md transition overflow-hidden"
-              >
-                <img
-                  src={item.image_url}
-                  alt="Store item"
-                  className="w-full h-48 object-cover"
-                />
+              <div key={item.id} className="group">
+                <div className="aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-100 shadow">
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+
+                <div className="mt-4 space-y-1">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold text-lg">
+                      {item.name}
+                    </h3>
+                    <span className="font-medium">
+                      ₹{item.price}
+                    </span>
+                  </div>
+
+                  {item.description && (
+                    <p className="text-sm text-zinc-500 line-clamp-2">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </main>
   )
 }

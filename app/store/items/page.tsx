@@ -15,12 +15,16 @@ export default function AddItemPage() {
     const [stores, setStores] = useState<Store[]>([])
     const [storeId, setStoreId] = useState("")
     const [file, setFile] = useState<File | null>(null)
+
+    const [name, setName] = useState("")
+    const [description, setDescription] = useState("")
+    const [price, setPrice] = useState("")
+
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         const loadStores = async () => {
             const { data: auth } = await supabase.auth.getUser()
-
             if (!auth.user) {
                 router.push("/login")
                 return
@@ -44,23 +48,18 @@ export default function AddItemPage() {
     }, [router])
 
     const uploadItem = async () => {
-        if (!storeId) {
-            alert("Select a store")
-            return
-        }
-
-        if (!file) {
-            alert("Select an image")
+        if (!storeId || !file || !name || !price) {
+            alert("All fields are required")
             return
         }
 
         setLoading(true)
 
-        const fileName = `${storeId}/${Date.now()}-${file.name}`
+        const filePath = `${storeId}/${Date.now()}-${file.name}`
 
         const { error: uploadError } = await supabase.storage
             .from("store-items")
-            .upload(fileName, file)
+            .upload(filePath, file)
 
         if (uploadError) {
             setLoading(false)
@@ -70,11 +69,14 @@ export default function AddItemPage() {
 
         const { data: publicUrl } = supabase.storage
             .from("store-items")
-            .getPublicUrl(fileName)
+            .getPublicUrl(filePath)
 
         const { error } = await supabase.from("items").insert({
             store_id: storeId,
             image_url: publicUrl.publicUrl,
+            name,
+            description,
+            price: Number(price),
         })
 
         setLoading(false)
@@ -84,63 +86,64 @@ export default function AddItemPage() {
             return
         }
 
-        alert("Item added successfully")
+        alert("Item added")
         router.push("/dashboard")
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-                <h1 className="text-2xl font-bold mb-2 text-center">
-                    Add Item
-                </h1>
+        <main className="min-h-screen flex items-center justify-center bg-gray-100 text-black">
+            <div className="bg-white p-8 rounded-xl shadow w-full max-w-md space-y-4">
+                <h1 className="text-2xl font-bold text-center text-gray-900">Add Item</h1>
 
-                <p className="text-gray-500 text-center mb-6">
-                    Upload an item image to one of your stores
-                </p>
+                <select
+                    value={storeId}
+                    onChange={(e) => setStoreId(e.target.value)}
+                    className="w-full border px-3 py-2 rounded bg-white text-black"
+                >
+                    <option value="">Select Store</option>
+                    {stores.map((s) => (
+                        <option key={s.id} value={s.id}>
+                            {s.store_name}
+                        </option>
+                    ))}
+                </select>
 
-                <div className="space-y-4">
-                    {/* Store Selector */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Select Store
-                        </label>
-                        <select
-                            value={storeId}
-                            onChange={(e) => setStoreId(e.target.value)}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                        >
-                            <option value="">Choose a store</option>
-                            {stores.map((store) => (
-                                <option key={store.id} value={store.id}>
-                                    {store.store_name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                <input
+                    placeholder="Item Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full border px-3 py-2 rounded bg-white text-black placeholder:text-gray-500"
+                />
 
-                    {/* File Upload */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">
-                            Item Image
-                        </label>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => setFile(e.target.files?.[0] || null)}
-                            className="w-full text-sm"
-                        />
-                    </div>
+                <textarea
+                    placeholder="Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full border px-3 py-2 rounded bg-white text-black placeholder:text-gray-500"
+                />
 
-                    {/* Submit */}
-                    <button
-                        onClick={uploadItem}
-                        disabled={loading}
-                        className="w-full py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition disabled:opacity-50"
-                    >
-                        {loading ? "Uploading..." : "Upload Item"}
-                    </button>
-                </div>
+                <input
+                    type="number"
+                    placeholder="Price"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full border px-3 py-2 rounded bg-white text-black placeholder:text-gray-500"
+                />
+
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+                />
+
+                <button
+                    onClick={uploadItem}
+                    disabled={loading}
+                    className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"
+                >
+                    {loading ? "Uploading..." : "Add Item"}
+                </button>
             </div>
         </main>
     )

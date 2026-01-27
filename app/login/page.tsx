@@ -29,9 +29,9 @@ export default function LoginPage() {
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-gray-100">
+        <main className="min-h-screen flex items-center justify-center bg-gray-100 text-black">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-                <h1 className="text-2xl font-bold mb-2 text-center">
+                <h1 className="text-2xl font-bold mb-2 text-center text-gray-900">
                     Welcome Back
                 </h1>
 
@@ -45,7 +45,7 @@ export default function LoginPage() {
                         placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black placeholder:text-gray-500 bg-white"
                     />
 
                     <input
@@ -53,13 +53,13 @@ export default function LoginPage() {
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black placeholder:text-gray-500 bg-white"
                     />
 
                     <button
                         onClick={login}
                         disabled={loading}
-                        className="w-full py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition disabled:opacity-50"
+                        className="w-full py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition disabled:opacity-50 font-medium"
                     >
                         {loading ? "Logging in..." : "Login"}
                     </button>
