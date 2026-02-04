@@ -25,6 +25,7 @@ export async function getSubdomain() {
 
     // Localhost
     if (cleanHost === "localhost") return null
+    if (cleanHost.endsWith(".localhost")) return parts[0]
 
     // Root domain (sprynt.works)
     if (parts.length === 2) return null

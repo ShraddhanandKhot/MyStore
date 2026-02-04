@@ -9,6 +9,7 @@ export default function CreateStore() {
 
     const [storeName, setStoreName] = useState("")
     const [subdomain, setSubdomain] = useState("")
+    const [template, setTemplate] = useState("classic")
     const [loading, setLoading] = useState(false)
 
     const createStore = async () => {
@@ -30,6 +31,7 @@ export default function CreateStore() {
             user_id: auth.user.id,
             store_name: storeName,
             subdomain: subdomain.toLowerCase(),
+            template,
         })
 
         setLoading(false)
@@ -81,9 +83,25 @@ export default function CreateStore() {
                         <p className="text-xs text-gray-500 mt-1">
                             Your store will be available at:{" "}
                             <span className="font-medium text-gray-700">
-                                {subdomain || "yourstore"}.yourapp.com
+                                {subdomain || "yourstore"}.sprynt.works
                             </span>
                         </p>
+                    </div>
+
+                    {/* Template Selection */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                            Template
+                        </label>
+                        <select
+                            value={template}
+                            onChange={(e) => setTemplate(e.target.value)}
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black bg-white"
+                        >
+                            <option value="classic">Classic</option>
+                            <option value="modern">Modern</option>
+                            <option value="minimal">Minimal</option>
+                        </select>
                     </div>
 
                     {/* Submit */}

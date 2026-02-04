@@ -2,6 +2,15 @@ import { getSubdomain } from "@/lib/getSubdomain"
 import { supabase } from "@/lib/supabaseClient"
 import { Store, ShoppingBag, ArrowRight, PackageOpen } from "lucide-react"
 import Link from "next/link"
+import Classic from "@/components/templates/classic/Storefront"
+import Modern from "@/components/templates/modern/Storefront"
+import Minimal from "@/components/templates/minimal/Storefront"
+
+const templates: any = {
+  classic: Classic,
+  modern: Modern,
+  minimal: Minimal,
+}
 
 // Server Component
 export default async function Home() {
@@ -54,7 +63,7 @@ export default async function Home() {
 
   const { data: store } = await supabase
     .from("stores")
-    .select("id, store_name")
+    .select("id, store_name, template")
     .eq("subdomain", subdomain)
     .single()
 
@@ -72,68 +81,11 @@ export default async function Home() {
     .eq("store_id", store.id)
     .order("created_at", { ascending: false })
 
-  return (
-    <main className="min-h-screen bg-white text-zinc-900">
-      {/* Header */}
-      <header className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur border-b z-50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center gap-4">
-          <div className="bg-zinc-900 text-white p-3 rounded-xl">
-            <ShoppingBag className="w-5 h-5" />
-          </div>
-          <h1 className="font-bold text-lg">{store.store_name}</h1>
-        </div>
-      </header>
+  /* ======================================================
+     DYNAMIC TEMPLATE RENDERING
+     ====================================================== */
 
-      {/* Hero */}
-      <section className="pt-32 pb-16 px-6 bg-zinc-50">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold mb-2">Latest Products</h2>
-          <p className="text-zinc-500">
-            Browse items available in this store.
-          </p>
-        </div>
-      </section>
+  const Template = templates[store.template] || templates.classic
 
-      {/* Items */}
-      <section className="max-w-7xl mx-auto px-6 pb-32">
-        {!items || items.length === 0 ? (
-          <div className="py-32 text-center text-zinc-500">
-            <PackageOpen className="mx-auto w-10 h-10 mb-4" />
-            No products yet
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {items.map((item) => (
-              <div key={item.id} className="group">
-                <div className="aspect-[4/5] rounded-3xl overflow-hidden bg-zinc-100 shadow">
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-
-                <div className="mt-4 space-y-1">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-semibold text-lg">
-                      {item.name}
-                    </h3>
-                    <span className="font-medium">
-                      ₹{item.price}
-                    </span>
-                  </div>
-
-                  {item.description && (
-                    <p className="text-sm text-zinc-500 line-clamp-2">
-                      {item.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-    </main>
-  )
+  return <Template store={store} items={items || []} />
 }
