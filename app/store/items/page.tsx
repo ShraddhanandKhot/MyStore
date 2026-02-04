@@ -19,6 +19,7 @@ export default function AddItemPage() {
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [price, setPrice] = useState("")
+    const [template, setTemplate] = useState("modern")
 
     const [loading, setLoading] = useState(false)
 
@@ -77,6 +78,7 @@ export default function AddItemPage() {
             name,
             description,
             price: Number(price),
+            template: template,
         })
 
         setLoading(false)
@@ -129,6 +131,19 @@ export default function AddItemPage() {
                     onChange={(e) => setPrice(e.target.value)}
                     className="w-full border px-3 py-2 rounded bg-white text-black placeholder:text-gray-500"
                 />
+
+                <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Product Page Template</label>
+                    <select
+                        value={template}
+                        onChange={(e) => setTemplate(e.target.value)}
+                        className="w-full border px-3 py-2 rounded bg-white text-black"
+                    >
+                        <option value="modern">Modern (Dark, Glassmorphism)</option>
+                        <option value="classic">Classic (Clean, Serif)</option>
+                        <option value="minimal">Minimal (Monospace, Stark)</option>
+                    </select>
+                </div>
 
                 <input
                     type="file"

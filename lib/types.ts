@@ -12,4 +12,5 @@ export type Item = {
     price: number
     image_url: string
     created_at: string
+    template?: string
 }
