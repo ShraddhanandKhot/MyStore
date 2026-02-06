@@ -30,7 +30,7 @@ export default async function Home() {
           </div>
 
           <h1 className="text-6xl font-bold bg-gradient-to-br from-zinc-900 to-zinc-500 bg-clip-text text-transparent">
-            Store Platform!!
+            Store Platform
           </h1>
 
           <p className="text-xl text-zinc-600 max-w-xl mx-auto">
