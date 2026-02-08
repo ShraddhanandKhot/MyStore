@@ -2,18 +2,12 @@ import { Item, Store } from "@/lib/types"
 import { ShoppingBag, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
+import StoreNavbar from "@/components/store/Navbar"
+
 export default function ClassicProductDetails({ store, item }: { store: Store; item: Item }) {
     return (
         <main className="min-h-screen bg-white text-black font-serif">
-            <header className="border-b py-6">
-                <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
-                    <Link href="/" className="text-sm uppercase tracking-widest hover:underline">
-                        &larr; Back
-                    </Link>
-                    <h1 className="text-2xl font-bold tracking-tighter">{store.store_name}</h1>
-                    <ShoppingBag className="w-6 h-6" />
-                </div>
-            </header>
+            <StoreNavbar store={store} variant="classic" />
 
             <div className="max-w-6xl mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

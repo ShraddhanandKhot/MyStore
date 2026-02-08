@@ -12,12 +12,13 @@ export default function EditItem() {
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [price, setPrice] = useState("")
+    const [storeId, setStoreId] = useState("")
 
     useEffect(() => {
         const loadItem = async () => {
             const { data, error } = await supabase
                 .from("items")
-                .select("name, description, price")
+                .select("name, description, price, store_id")
                 .eq("id", itemId)
                 .single()
 
@@ -29,6 +30,7 @@ export default function EditItem() {
             setName(data.name)
             setDescription(data.description || "")
             setPrice(String(data.price))
+            setStoreId(data.store_id)
         }
 
         loadItem()
@@ -50,7 +52,7 @@ export default function EditItem() {
         }
 
         alert("Item updated")
-        router.push("/dashboard/items")
+        router.push(`/dashboard/items?store_id=${storeId}`)
     }
 
     return (

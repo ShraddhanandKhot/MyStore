@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 type Item = {
     id: string
@@ -14,6 +14,9 @@ type Item = {
 
 export default function ManageItems() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const storeId = searchParams.get("store_id")
+
     const [items, setItems] = useState<Item[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -25,7 +28,8 @@ export default function ManageItems() {
                 return
             }
 
-            const { data, error } = await supabase
+
+            let query = supabase
                 .from("items")
                 .select(`
           id,
@@ -33,9 +37,15 @@ export default function ManageItems() {
           description,
           price,
           image_url,
-          stores!inner(user_id)
+          stores!inner(user_id, store_name)
         `)
                 .eq("stores.user_id", auth.user.id)
+
+            if (storeId) {
+                query = query.eq("store_id", storeId)
+            }
+
+            const { data, error } = await query
 
             if (error) {
                 alert(error.message)
@@ -47,7 +57,7 @@ export default function ManageItems() {
         }
 
         loadItems()
-    }, [router])
+    }, [router, storeId])
 
     async function deleteItem(itemId: string) {
         const confirmDelete = confirm("Are you sure?")
@@ -69,8 +79,26 @@ export default function ManageItems() {
     if (loading) return <p className="p-6">Loading items...</p>
 
     return (
-        <main className="p-6 max-w-5xl mx-auto text-black">
-            <h1 className="text-2xl font-bold mb-6 text-gray-900">Manage Items</h1>
+        <main className="p-6 max-w-5xl mx-auto text-gray">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-white">
+                    {storeId ? "Manage Store Items" : "Manage All Items"}
+                </h1>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => router.push(storeId ? `/dashboard/items/new?store_id=${storeId}` : `/dashboard/items/new`)}
+                        className="px-4 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800 transition"
+                    >
+                        + Add New Item
+                    </button>
+                    <button
+                        onClick={() => router.back()}
+                        className="px-4 py-2 text-sm text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition"
+                    >
+                        ← Back to Dashboard
+                    </button>
+                </div>
+            </div>
 
             {items.length === 0 && <p className="text-gray-500">No items found</p>}
 
@@ -89,9 +117,9 @@ export default function ManageItems() {
                         <div className="flex gap-3 mt-4">
                             <button
                                 onClick={() => router.push(`/dashboard/items/${item.id}`)}
-                                className="px-4 py-1 border rounded hover:bg-gray-50 transition"
+                                className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
                             >
-                                ✏️ Edit
+                                ✏️Edit
                             </button>
 
                             <button

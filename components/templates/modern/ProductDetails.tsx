@@ -2,23 +2,12 @@ import { Item, Store } from "@/lib/types"
 import { ShoppingBag, ArrowLeft, Check } from "lucide-react"
 import Link from "next/link"
 
+import StoreNavbar from "@/components/store/Navbar"
+
 export default function ModernProductDetails({ store, item }: { store: Store; item: Item }) {
     return (
         <main className="min-h-screen bg-neutral-950 text-white selection:bg-purple-500/30">
-            {/* Header */}
-            <header className="sticky top-0 z-50 glass border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors">
-                        <ArrowLeft className="w-5 h-5" />
-                        <span className="font-medium">Back to Store</span>
-                    </Link>
-                    <div className="font-bold text-lg">{store.store_name}</div>
-                    <button className="p-2 hover:bg-white/10 rounded-full transition-colors relative">
-                        <ShoppingBag className="w-5 h-5" />
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
-                    </button>
-                </div>
-            </header>
+            <StoreNavbar store={store} variant="modern" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">

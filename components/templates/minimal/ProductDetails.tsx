@@ -2,16 +2,13 @@ import { Item, Store } from "@/lib/types"
 import { ShoppingBag } from "lucide-react"
 import Link from "next/link"
 
+import StoreNavbar from "@/components/store/Navbar"
+
 export default function MinimalProductDetails({ store, item }: { store: Store; item: Item }) {
     return (
         <main className="min-h-screen bg-gray-50 text-gray-900 font-mono">
+            <StoreNavbar store={store} variant="minimal" />
             <div className="max-w-4xl mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-12">
-                    <Link href="/" className="text-sm text-gray-400 hover:text-black transition">
-                        /back
-                    </Link>
-                    <div className="text-sm font-bold uppercase">{store.store_name}</div>
-                </div>
 
                 <div className="space-y-8">
                     <div className="aspect-square bg-gray-200 overflow-hidden">

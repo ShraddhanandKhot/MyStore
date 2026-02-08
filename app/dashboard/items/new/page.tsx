@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 type Store = {
     id: string
@@ -11,9 +11,11 @@ type Store = {
 
 export default function AddItemPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const queryStoreId = searchParams.get("store_id")
 
     const [stores, setStores] = useState<Store[]>([])
-    const [storeId, setStoreId] = useState("")
+    const [storeId, setStoreId] = useState(queryStoreId || "")
     const [file, setFile] = useState<File | null>(null)
 
     const [name, setName] = useState("")
@@ -47,6 +49,12 @@ export default function AddItemPage() {
 
         loadStores()
     }, [router])
+
+    useEffect(() => {
+        if (queryStoreId) {
+            setStoreId(queryStoreId)
+        }
+    }, [queryStoreId])
 
     const uploadItem = async () => {
         if (!storeId || !file || !name || !price) {
@@ -89,7 +97,12 @@ export default function AddItemPage() {
         }
 
         alert("Item added")
-        router.push("/dashboard")
+        // Redirect back to the store items list if storeId was provided, otherwise dashboard
+        if (queryStoreId) {
+            router.push(`/dashboard/items?store_id=${queryStoreId}`)
+        } else {
+            router.push("/dashboard")
+        }
     }
 
     return (
@@ -97,18 +110,24 @@ export default function AddItemPage() {
             <div className="bg-white p-8 rounded-xl shadow w-full max-w-md space-y-4">
                 <h1 className="text-2xl font-bold text-center text-gray-900">Add Item</h1>
 
-                <select
-                    value={storeId}
-                    onChange={(e) => setStoreId(e.target.value)}
-                    className="w-full border px-3 py-2 rounded bg-white text-black"
-                >
-                    <option value="">Select Store</option>
-                    {stores.map((s) => (
-                        <option key={s.id} value={s.id}>
-                            {s.store_name}
-                        </option>
-                    ))}
-                </select>
+                {queryStoreId ? (
+                    <div className="w-full border px-3 py-2 rounded bg-gray-100 text-gray-700">
+                        Store: <span className="font-semibold text-black">{stores.find(s => s.id === queryStoreId)?.store_name || "Loading..."}</span>
+                    </div>
+                ) : (
+                    <select
+                        value={storeId}
+                        onChange={(e) => setStoreId(e.target.value)}
+                        className="w-full border px-3 py-2 rounded bg-white text-black"
+                    >
+                        <option value="">Select Store</option>
+                        {stores.map((s) => (
+                            <option key={s.id} value={s.id}>
+                                {s.store_name}
+                            </option>
+                        ))}
+                    </select>
+                )}
 
                 <input
                     placeholder="Item Name"

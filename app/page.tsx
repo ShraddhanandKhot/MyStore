@@ -13,6 +13,8 @@ const templates: any = {
 }
 
 // Server Component
+export const revalidate = 0
+
 export default async function Home() {
   const subdomain = await getSubdomain()
 
