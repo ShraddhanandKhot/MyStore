@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -12,7 +12,7 @@ type Item = {
     image_url: string
 }
 
-export default function ManageItems() {
+function ManageItemsContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const storeId = searchParams.get("store_id")
@@ -133,6 +133,14 @@ export default function ManageItems() {
                 ))}
             </div>
         </main>
+    )
+}
+
+export default function ManageItems() {
+    return (
+        <Suspense fallback={<p className="p-6">Loading items...</p>}>
+            <ManageItemsContent />
+        </Suspense>
     )
 }
 

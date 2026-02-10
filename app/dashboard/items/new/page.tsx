@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -9,7 +9,7 @@ type Store = {
     store_name: string
 }
 
-export default function AddItemPage() {
+function AddItemPageContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const queryStoreId = searchParams.get("store_id")
@@ -180,5 +180,13 @@ export default function AddItemPage() {
                 </button>
             </div>
         </main>
+    )
+}
+
+export default function AddItemPage() {
+    return (
+        <Suspense fallback={<p>Loading...</p>}>
+            <AddItemPageContent />
+        </Suspense>
     )
 }
