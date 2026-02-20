@@ -55,8 +55,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         )
     }
 
+    // Fetch other items for cross-selling
+    const { data: items } = await supabase
+        .from("items")
+        .select("*")
+        .eq("store_id", store.id)
+        .order("created_at", { ascending: false })
+
     // Default to modern if no store template specified or template not found
     const Template = templates[store.template || "classic"] || templates.classic
 
-    return <Template store={store} item={item} />
+    return <Template store={store} item={item} items={items || []} />
 }
+
