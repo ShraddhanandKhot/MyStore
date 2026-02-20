@@ -3,6 +3,9 @@ export type Store = {
     store_name: string
     template: string
     subdomain: string
+    user_id: string
+    created_at: string
+    image_url?: string
 }
 
 export type Item = {
@@ -11,6 +14,8 @@ export type Item = {
     description: string
     price: number
     image_url: string
+    image_urls?: string[]
     created_at: string
     template?: string
+    store_id: string
 }

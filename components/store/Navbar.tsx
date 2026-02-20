@@ -20,7 +20,7 @@ export default function StoreNavbar({ store, variant = "modern" }: NavbarProps) 
         `}>
             {/* Logo / Home Link */}
             <Link href="/" className="text-lg font-bold hover:opacity-80 transition">
-                Home
+                {store.store_name}
             </Link>
 
             {/* Nav Links */}

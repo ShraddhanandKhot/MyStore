@@ -25,7 +25,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
     const { data: store } = await supabase
         .from("stores")
-        .select("id, store_name")
+        .select("id, store_name, template")
         .eq("subdomain", subdomain)
         .single()
 
@@ -55,8 +55,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         )
     }
 
-    // Default to modern if no template specified or template not found
-    const Template = templates[item.template || "modern"] || templates.modern
+    // Default to modern if no store template specified or template not found
+    const Template = templates[store.template || "classic"] || templates.classic
 
     return <Template store={store} item={item} />
 }

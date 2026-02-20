@@ -59,9 +59,7 @@ export default async function Home() {
     )
   }
 
-  /* ======================================================
-     SUBDOMAIN → STOREFRONT
-     ====================================================== */
+  /* SUBDOMAIN → STOREFRONT */
 
   const { data: store } = await supabase
     .from("stores")
@@ -83,11 +81,9 @@ export default async function Home() {
     .eq("store_id", store.id)
     .order("created_at", { ascending: false })
 
-  /* ======================================================
-     DYNAMIC TEMPLATE RENDERING
-     ====================================================== */
+  /* DYNAMIC TEMPLATE RENDERING */
 
-  const Template = templates[store.template] || templates.classic
+  const DTemplate = templates[store.template] || templates.classic
 
-  return <Template store={store} items={items || []} />
+  return <DTemplate store={store} items={items || []} />
 }

@@ -171,9 +171,19 @@ export default function Dashboard() {
                                         className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300 group"
                                     >
                                         <div className="h-32 bg-gray-100 relative flex items-center justify-center">
-                                            {/* Pattern overlay */}
-                                            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#444cf7_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                                            <Store className="w-12 h-12 text-gray-300 group-hover:text-blue-500 transition-colors" />
+                                            {store.image_url ? (
+                                                <img
+                                                    src={store.image_url}
+                                                    alt={store.store_name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <>
+                                                    {/* Pattern overlay */}
+                                                    <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#444cf7_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                                                    <Store className="w-12 h-12 text-gray-300 group-hover:text-blue-500 transition-colors" />
+                                                </>
+                                            )}
                                             {/* Status Badge */}
                                             <div className="absolute top-4 right-4 bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
                                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>

@@ -11,6 +11,7 @@ export default function CreateStore() {
     const [subdomain, setSubdomain] = useState("")
     const [template, setTemplate] = useState("classic")
     const [loading, setLoading] = useState(false)
+    const [file, setFile] = useState<File | null>(null)
 
     const createStore = async () => {
         if (!storeName || !subdomain) {
@@ -27,11 +28,33 @@ export default function CreateStore() {
             return
         }
 
+        let imageUrl = null
+
+        if (file) {
+            const filePath = `logos/${auth.user.id}/${Date.now()}-${file.name}`
+            const { error: uploadError } = await supabase.storage
+                .from("store-logos")
+                .upload(filePath, file)
+
+            if (uploadError) {
+                setLoading(false)
+                alert("Error uploading logo: " + uploadError.message)
+                return
+            }
+
+            const { data: publicUrl } = supabase.storage
+                .from("store-logos")
+                .getPublicUrl(filePath)
+
+            imageUrl = publicUrl.publicUrl
+        }
+
         const { error } = await supabase.from("stores").insert({
             user_id: auth.user.id,
             store_name: storeName,
             subdomain: subdomain.toLowerCase(),
             template,
+            image_url: imageUrl,
         })
 
         setLoading(false)
@@ -86,6 +109,19 @@ export default function CreateStore() {
                                 {subdomain || "yourstore"}.sprynt.works
                             </span>
                         </p>
+                    </div>
+
+                    {/* Store Logo */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">
+                            Store Logo (Optional)
+                        </label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setFile(e.target.files?.[0] || null)}
+                            className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 transition"
+                        />
                     </div>
 
                     {/* Template Selection */}

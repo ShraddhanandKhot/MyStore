@@ -16,7 +16,7 @@ function AddItemPageContent() {
 
     const [stores, setStores] = useState<Store[]>([])
     const [storeId, setStoreId] = useState(queryStoreId || "")
-    const [file, setFile] = useState<File | null>(null)
+    const [files, setFiles] = useState<File[]>([])
 
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
@@ -57,32 +57,39 @@ function AddItemPageContent() {
     }, [queryStoreId])
 
     const uploadItem = async () => {
-        if (!storeId || !file || !name || !price) {
+        if (!storeId || files.length === 0 || !name || !price) {
             alert("All fields are required")
             return
         }
 
         setLoading(true)
 
-        const filePath = `${storeId}/${Date.now()}-${file.name}`
+        const uploadedUrls: string[] = []
 
-        const { error: uploadError } = await supabase.storage
-            .from("store-items")
-            .upload(filePath, file)
+        for (const file of files) {
+            const filePath = `${storeId}/${Date.now()}-${file.name}`
 
-        if (uploadError) {
-            setLoading(false)
-            alert(uploadError.message)
-            return
+            const { error: uploadError } = await supabase.storage
+                .from("store-items")
+                .upload(filePath, file)
+
+            if (uploadError) {
+                setLoading(false)
+                alert(`Error uploading ${file.name}: ${uploadError.message}`)
+                return
+            }
+
+            const { data: publicUrl } = supabase.storage
+                .from("store-items")
+                .getPublicUrl(filePath)
+
+            uploadedUrls.push(publicUrl.publicUrl)
         }
-
-        const { data: publicUrl } = supabase.storage
-            .from("store-items")
-            .getPublicUrl(filePath)
 
         const { error } = await supabase.from("items").insert({
             store_id: storeId,
-            image_url: publicUrl.publicUrl,
+            image_url: uploadedUrls[0], // Backwards compatibility
+            image_urls: uploadedUrls,
             name,
             description,
             price: Number(price),
@@ -167,7 +174,12 @@ function AddItemPageContent() {
                 <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    multiple
+                    onChange={(e) => {
+                        if (e.target.files) {
+                            setFiles(Array.from(e.target.files))
+                        }
+                    }}
                     className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
                 />
 
