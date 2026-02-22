@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter, useParams } from "next/navigation"
-import { Store as StoreIcon, ArrowLeft, Check, LayoutTemplate, Trash2, AlertTriangle, Save, Eye } from "lucide-react"
+import { Store as StoreIcon, ArrowLeft, Check, LayoutTemplate, Trash2, AlertTriangle, Save, Eye, Tag, Plus, X } from "lucide-react"
 
 // Import Templates for Live Preview
 import ModernStorefront from "@/components/templates/modern/Storefront"
 import ClassicStorefront from "@/components/templates/classic/Storefront"
 import MinimalStorefront from "@/components/templates/minimal/Storefront"
-import { Store, Item } from "@/lib/types"
+import { Store, Item, Category } from "@/lib/types"
 
 export default function ManageStore() {
     const router = useRouter()
@@ -20,6 +20,9 @@ export default function ManageStore() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [deleting, setDeleting] = useState(false)
+    const [categories, setCategories] = useState<Category[]>([])
+    const [newCategoryName, setNewCategoryName] = useState("")
+    const [addingCategory, setAddingCategory] = useState(false)
 
     // Form State
     const [storeName, setStoreName] = useState("")
@@ -75,7 +78,55 @@ export default function ManageStore() {
         }
 
         loadStore()
+        fetchCategories()
     }, [storeId, router])
+
+    const fetchCategories = async () => {
+        const { data, error } = await supabase
+            .from("categories")
+            .select("*")
+            .eq("store_id", storeId)
+            .order("created_at", { ascending: true })
+
+        if (!error && data) {
+            setCategories(data)
+        }
+    }
+
+    const handleAddCategory = async () => {
+        if (!newCategoryName.trim()) return
+
+        setAddingCategory(true)
+        const { data, error } = await supabase
+            .from("categories")
+            .insert({
+                name: newCategoryName.trim(),
+                store_id: storeId
+            })
+            .select()
+            .single()
+
+        if (error) {
+            alert("Failed to add category: " + error.message)
+        } else if (data) {
+            setCategories([...categories, data])
+            setNewCategoryName("")
+        }
+        setAddingCategory(false)
+    }
+
+    const handleDeleteCategory = async (id: string) => {
+        const { error } = await supabase
+            .from("categories")
+            .delete()
+            .eq("id", id)
+
+        if (error) {
+            alert("Failed to delete category: " + error.message)
+        } else {
+            setCategories(categories.filter(c => c.id !== id))
+        }
+    }
 
     const handleSave = async () => {
         if (!storeName.trim() || !subdomain.trim()) {
@@ -192,12 +243,12 @@ export default function ManageStore() {
     const renderPreview = () => {
         switch (selectedTemplate) {
             case "modern":
-                return <ModernStorefront store={mockStore} items={mockItems} />
+                return <ModernStorefront store={mockStore} items={mockItems} categories={categories} />
             case "minimal":
-                return <MinimalStorefront store={mockStore} items={mockItems} />
+                return <MinimalStorefront store={mockStore} items={mockItems} categories={categories} />
             case "classic":
             default:
-                return <ClassicStorefront store={mockStore} items={mockItems} />
+                return <ClassicStorefront store={mockStore} items={mockItems} categories={categories} />
         }
     }
 
@@ -266,6 +317,60 @@ export default function ManageStore() {
                                             .sprynt.works
                                         </span>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Category Management */}
+                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+                            <div className="flex items-center gap-3 border-b border-gray-100 pb-6">
+                                <div className="p-2 bg-green-50 rounded-lg text-green-600">
+                                    <Tag className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-semibold text-gray-900">Product Categories</h2>
+                                    <p className="text-gray-500 text-sm">Organize your products with categories.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex gap-2">
+                                    <input
+                                        value={newCategoryName}
+                                        onChange={(e) => setNewCategoryName(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                                        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-black bg-white"
+                                        placeholder="Category Name (e.g. Shoes, Electronics)"
+                                    />
+                                    <button
+                                        onClick={handleAddCategory}
+                                        disabled={addingCategory || !newCategoryName.trim()}
+                                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Add
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {categories.length === 0 ? (
+                                        <p className="text-gray-500 text-sm italic">No categories created yet.</p>
+                                    ) : (
+                                        categories.map((cat) => (
+                                            <div
+                                                key={cat.id}
+                                                className="group flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full border border-gray-200 hover:border-gray-300 transition"
+                                            >
+                                                <span className="text-sm font-medium text-gray-700">{cat.name}</span>
+                                                <button
+                                                    onClick={() => handleDeleteCategory(cat.id)}
+                                                    className="p-0.5 hover:bg-gray-200 rounded-full text-gray-400 hover:text-red-500 transition"
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>

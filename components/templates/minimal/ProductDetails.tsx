@@ -1,19 +1,52 @@
 "use client"
 
-import { Item, Store } from "@/lib/types"
-import { Home, ShoppingBag, Phone, Check, ShieldCheck, Truck, RotateCcw, MessageCircle, Headphones, ArrowLeft } from "lucide-react"
+import { Item, Store, Category } from "@/lib/types"
+import { Home, ShoppingBag, Phone, Check, ShieldCheck, Truck, RotateCcw, MessageCircle, Headphones, ArrowLeft, Search } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
-export default function MinimalProductDetails({ store, item, items = [] }: { store: Store; item: Item; items?: Item[] }) {
+export default function MinimalProductDetails({
+    store,
+    item,
+    items = [],
+    categories
+}: {
+    store: Store;
+    item: Item;
+    items?: Item[];
+    categories: Category[]
+}) {
+    const router = useRouter()
+    const [searchQuery, setSearchQuery] = useState("")
     const [selectedImage, setSelectedImage] = useState(item.image_urls?.[0] || item.image_url || "/placeholder.png")
+
     const images = item.image_urls && item.image_urls.length > 0 ? item.image_urls : [item.image_url]
 
     const discountPercentage = 40
     const originalPrice = (item.price / (1 - discountPercentage / 100)).toFixed(2)
 
-    // Mock Timer
-    const [timeLeft, setTimeLeft] = useState("06:37:41")
+    // Countdown Logic
+    const [timeLeft, setTimeLeft] = useState({
+        hours: item.sale_timer_hours || 0,
+        minutes: item.sale_timer_minutes || 0,
+        seconds: item.sale_timer_seconds || 0
+    });
+
+    useEffect(() => {
+        if (!item.sale_timer_enabled) return;
+
+        const timer = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+                if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+                if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+                clearInterval(timer);
+                return prev;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [item.id, item.sale_timer_enabled]);
 
     return (
         <main className="min-h-screen bg-gray-50 pb-24 font-sans text-gray-800">
@@ -21,9 +54,12 @@ export default function MinimalProductDetails({ store, item, items = [] }: { sto
             {/* 1. Header */}
             <header className="bg-white shadow-sm sticky top-0 z-40">
                 <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
-                    <Link href="/" className="text-gray-600">
+                    <button
+                        onClick={() => router.push("/")}
+                        className="text-gray-600"
+                    >
                         <Home className="w-6 h-6" />
-                    </Link>
+                    </button>
                     <div className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
                         {store.store_name}
                     </div>
@@ -31,6 +67,44 @@ export default function MinimalProductDetails({ store, item, items = [] }: { sto
                         <button className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
                             SAR
                         </button>
+                    </div>
+                </div>
+
+                {/* Search Bar */}
+                <div className="max-w-lg mx-auto px-4 pb-3">
+                    <div className="relative group">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Find products..."
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value)
+                                router.push(`/?search=${encodeURIComponent(e.target.value)}`)
+                            }}
+                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200/50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:bg-white focus:border-pink-500 transition-all shadow-sm"
+                        />
+                    </div>
+                </div>
+
+                {/* Categories Row */}
+                <div className="border-t border-gray-50 bg-white overflow-x-auto no-scrollbar">
+                    <div className="max-w-lg mx-auto px-4 flex items-center gap-4 py-3 whitespace-nowrap">
+                        <button
+                            onClick={() => router.push("/")}
+                            className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full text-gray-400 hover:text-gray-600 transition-all font-bold"
+                        >
+                            All
+                        </button>
+                        {categories.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => router.push(`/?category=${cat.id}`)}
+                                className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full text-gray-400 hover:text-gray-600 transition-all font-bold"
+                            >
+                                {cat.name}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </header>
@@ -61,20 +135,46 @@ export default function MinimalProductDetails({ store, item, items = [] }: { sto
                     </div>
                 )}
 
-                {/* Flash Deal Banner */}
-                <div className="bg-gradient-to-r from-blue-700 to-pink-500 text-white p-3 flex justify-between items-center">
+                {/* Flash Deal Banner / Countdown */}
+                <div className={`
+                    bg-black text-white p-4 flex justify-between items-center transition-all duration-500
+                    ${item.sale_timer_enabled ? 'opacity-100 scale-100' : 'opacity-0 scale-95 h-0 overflow-hidden p-0'}
+                `}>
                     <div>
                         <div className="flex items-baseline gap-2">
                             <span className="text-2xl font-bold">{item.price.toFixed(2)}</span>
-                            <span className="text-xs bg-red-600 px-1 rounded">-{discountPercentage}% OFF</span>
+                            <span className="text-[10px] bg-white text-black px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">-{discountPercentage}% OFF</span>
                         </div>
-                        <div className="text-xs opacity-80 line-through">SAR {originalPrice}</div>
+                        <div className="text-[10px] opacity-60 line-through tracking-widest uppercase">SAR {originalPrice}</div>
                     </div>
-                    <div className="text-right">
-                        <div className="text-xs text-pink-200">Ends in:</div>
-                        <div className="text-xl font-bold font-mono">{timeLeft}</div>
+                    <div className="text-right flex items-center gap-4">
+                        <div className="hidden sm:block">
+                            <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Limited Sale</div>
+                            <div className="text-[10px] text-gray-400 uppercase tracking-widest">Ending Soon</div>
+                        </div>
+                        <div className="flex gap-2 font-mono font-bold text-xl">
+                            <div className="bg-zinc-800 px-1.5 py-1 rounded">
+                                {String(timeLeft.hours).padStart(2, '0')}
+                            </div>
+                            <div className="text-zinc-500 self-center">:</div>
+                            <div className="bg-zinc-800 px-1.5 py-1 rounded">
+                                {String(timeLeft.minutes).padStart(2, '0')}
+                            </div>
+                            <div className="text-zinc-500 self-center">:</div>
+                            <div className="bg-zinc-800 px-1.5 py-1 rounded text-pink-500">
+                                {String(timeLeft.seconds).padStart(2, '0')}
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                {/* Always visible fallback for non-timer items if needed, or just standard price */}
+                {!item.sale_timer_enabled && (
+                    <div className="p-4 bg-white border-b flex justify-between items-center">
+                        <span className="text-2xl font-bold tracking-tighter">SAR {item.price.toFixed(2)}</span>
+                        <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">Premium Quality</span>
+                    </div>
+                )}
 
                 {/* Progress Bar */}
                 <div className="px-4 py-2 bg-white">

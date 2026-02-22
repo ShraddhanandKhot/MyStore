@@ -1,30 +1,48 @@
 "use client"
 
-import { Item, Store } from "@/lib/types"
+import { Item, Store, Category } from "@/lib/types"
 import { Check, Truck, ShieldCheck, Heart, Share2, MessageCircle, BarChart2, ShoppingCart, Clock, CreditCard, ShoppingBag } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 import ModernNavbar from "./Navbar"
 
-export default function ModernProductDetails({ store, item }: { store: Store; item: Item }) {
+export default function ModernProductDetails({
+    store,
+    item,
+    categories
+}: {
+    store: Store;
+    item: Item;
+    categories: Category[]
+}) {
+    const router = useRouter()
     const [selectedImage, setSelectedImage] = useState(item.image_urls?.[0] || item.image_url || "/placeholder.png")
     const images = item.image_urls && item.image_urls.length > 0 ? item.image_urls : [item.image_url]
 
-    // Mock Data
-    const [timeLeft, setTimeLeft] = useState({ hours: 11, minutes: 38, seconds: 7 });
+    // Countdown Logic
+    const [timeLeft, setTimeLeft] = useState({
+        hours: item.sale_timer_hours || 0,
+        minutes: item.sale_timer_minutes || 0,
+        seconds: item.sale_timer_seconds || 0
+    });
+    const [searchQuery, setSearchQuery] = useState("")
 
     useEffect(() => {
+        if (!item.sale_timer_enabled) return;
+
         const timer = setInterval(() => {
             setTimeLeft(prev => {
                 if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
                 if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
                 if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+                clearInterval(timer);
                 return prev;
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, []);
+    }, [item.id, item.sale_timer_enabled]);
 
     const [selectedBundle, setSelectedBundle] = useState(1);
 
@@ -37,7 +55,21 @@ export default function ModernProductDetails({ store, item }: { store: Store; it
 
     return (
         <main className="min-h-screen bg-white text-black font-sans">
-            <ModernNavbar store={store} />
+            <ModernNavbar
+                store={store}
+                categories={categories}
+                onCategorySelect={(id) => {
+                    // Navigate to home with category filter
+                    router.push(`/?category=${id}`)
+                }}
+                selectedCategoryId={null}
+                searchQuery={searchQuery}
+                onSearchChange={(query) => {
+                    setSearchQuery(query)
+                    // Redirect to home with search query
+                    router.push(`/?search=${encodeURIComponent(query)}`)
+                }}
+            />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -186,19 +218,34 @@ export default function ModernProductDetails({ store, item }: { store: Store; it
                         </div>
 
                         {/* Countdown Timer */}
-                        <div className="bg-[#FFF8F0] p-4 rounded-xl text-center space-y-2">
-                            <div className="flex items-center justify-center gap-2 text-red-500 font-bold animate-pulse">
-                                🔥 ⏳ Prices Going Up 🔥 ⏳
+                        {item.sale_timer_enabled && (
+                            <div className="bg-black/5 backdrop-blur-md p-6 rounded-2xl text-center space-y-4 border border-white/20 shadow-xl relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5" />
+                                <div className="flex items-center justify-center gap-2 text-red-500 font-black tracking-widest text-xs uppercase animate-pulse relative z-10">
+                                    <Clock className="w-3 h-3" /> Prices Going Up Soon
+                                </div>
+                                <div className="flex justify-center gap-4 relative z-10">
+                                    {[
+                                        { label: "HRS", val: timeLeft.hours },
+                                        { label: "MIN", val: timeLeft.minutes },
+                                        { label: "SEC", val: timeLeft.seconds }
+                                    ].map((unit, i) => (
+                                        <div key={i} className="flex flex-col items-center">
+                                            <div className="bg-black text-white px-3 py-2 rounded-lg font-mono font-bold text-2xl shadow-[0_0_15px_rgba(0,0,0,0.3)] min-w-[3rem]">
+                                                {String(unit.val).padStart(2, '0')}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-gray-400 mt-1">{unit.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden mt-4 relative z-10">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-1000"
+                                        style={{ width: `${((timeLeft.hours * 3600 + timeLeft.minutes * 60 + timeLeft.seconds) / (item.sale_timer_hours! * 3600 + item.sale_timer_minutes! * 60 + item.sale_timer_seconds!)) * 100}%` }}
+                                    />
+                                </div>
                             </div>
-                            <div className="text-xs text-gray-600">Sale ends in:</div>
-                            <div className="flex justify-center gap-2 text-white font-mono font-bold text-xl">
-                                <div className="bg-black px-2 py-1 rounded">{String(timeLeft.hours).padStart(2, '0')}</div>
-                                <div className="text-black self-center">:</div>
-                                <div className="bg-black px-2 py-1 rounded">{String(timeLeft.minutes).padStart(2, '0')}</div>
-                                <div className="text-black self-center">:</div>
-                                <div className="bg-black px-2 py-1 rounded">{String(timeLeft.seconds).padStart(2, '0')}</div>
-                            </div>
-                        </div>
+                        )}
 
 
                         <div className="text-xs text-gray-500 text-center uppercase tracking-wide font-bold pt-4">Start Your Wellness Journey With DUBAI HERBS</div>

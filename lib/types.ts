@@ -18,4 +18,16 @@ export type Item = {
     created_at: string
     template?: string
     store_id: string
+    category_id?: string
+    sale_timer_enabled?: boolean
+    sale_timer_hours?: number
+    sale_timer_minutes?: number
+    sale_timer_seconds?: number
+}
+
+export type Category = {
+    id: string
+    name: string
+    store_id: string
+    created_at: string
 }

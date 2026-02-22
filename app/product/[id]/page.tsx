@@ -62,9 +62,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         .eq("store_id", store.id)
         .order("created_at", { ascending: false })
 
+    // Fetch categories for the store
+    const { data: categories } = await supabase
+        .from("categories")
+        .select("*")
+        .eq("store_id", store.id)
+        .order("name", { ascending: true })
+
     // Default to modern if no store template specified or template not found
     const Template = templates[store.template || "classic"] || templates.classic
 
-    return <Template store={store} item={item} items={items || []} />
+    return <Template store={store} item={item} items={items || []} categories={categories || []} />
 }
 

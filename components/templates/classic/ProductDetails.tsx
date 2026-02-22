@@ -1,19 +1,52 @@
 "use client"
 
-import { Item, Store } from "@/lib/types"
-import { ShoppingBag, ArrowLeft } from "lucide-react"
+import { Item, Store, Category } from "@/lib/types"
+import { ShoppingBag, ArrowLeft, Clock } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 import ClassicNavbar from "./Navbar"
 
-export default function ClassicProductDetails({ store, item }: { store: Store; item: Item }) {
+export default function ClassicProductDetails({
+    store,
+    item,
+    categories
+}: {
+    store: Store;
+    item: Item;
+    categories: Category[]
+}) {
+    const router = useRouter()
     const [selectedImage, setSelectedImage] = useState(item.image_urls?.[0] || item.image_url || "/placeholder.png")
     const images = item.image_urls && item.image_urls.length > 0 ? item.image_urls : [item.image_url]
 
     // Mock discount logic
     const [quantity, setQuantity] = useState(1);
     const [selectedOffer, setSelectedOffer] = useState(1);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Countdown Logic
+    const [timeLeft, setTimeLeft] = useState({
+        hours: item.sale_timer_hours || 0,
+        minutes: item.sale_timer_minutes || 0,
+        seconds: item.sale_timer_seconds || 0
+    });
+
+    useEffect(() => {
+        if (!item.sale_timer_enabled) return;
+
+        const timer = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+                if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+                if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+                clearInterval(timer);
+                return prev;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [item.id, item.sale_timer_enabled]);
 
     const offers = [
         { id: 1, quantity: 1, discount: 0, label: "1 Pc", price: item.price, originalPrice: item.price * 1.45 },
@@ -23,7 +56,22 @@ export default function ClassicProductDetails({ store, item }: { store: Store; i
 
     return (
         <main className="min-h-screen bg-white text-black font-sans">
-            <ClassicNavbar store={store} />
+            <ClassicNavbar
+                store={store}
+                categories={categories}
+                onCategorySelect={(id) => {
+                    // Navigate to home with category filter
+                    router.push(`/?category=${id}`)
+                }}
+                selectedCategoryId={null}
+                searchQuery={searchQuery}
+                onSearchChange={(query) => {
+                    setSearchQuery(query)
+                    // Redirect to home with search query
+                    router.push(`/?search=${encodeURIComponent(query)}`)
+                }}
+                onHomeClick={() => router.push("/")}
+            />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -116,6 +164,28 @@ export default function ClassicProductDetails({ store, item }: { store: Store; i
                             <span className="text-3xl font-bold text-red-600">Dhs. {item.price.toFixed(2)}</span>
                             <span className="text-lg text-gray-400 line-through decoration-gray-400">Dhs. {(item.price * 1.45).toFixed(2)}</span>
                         </div>
+
+                        {item.sale_timer_enabled && (
+                            <div className="bg-stone-50 border border-stone-100 p-5 rounded-lg flex flex-col items-center gap-3">
+                                <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500">
+                                    <Clock className="w-3 h-3" /> Sale Ends In
+                                </div>
+                                <div className="flex gap-4">
+                                    {[
+                                        { val: timeLeft.hours, label: 'Hours' },
+                                        { val: timeLeft.minutes, label: 'Mins' },
+                                        { val: timeLeft.seconds, label: 'Secs' }
+                                    ].map((unit, i) => (
+                                        <div key={i} className="flex flex-col items-center">
+                                            <div className="text-2xl font-serif font-bold text-stone-800 bg-white border border-stone-200 px-3 py-1 rounded shadow-sm min-w-[3.5rem] text-center">
+                                                {String(unit.val).padStart(2, '0')}
+                                            </div>
+                                            <span className="text-[10px] text-stone-400 mt-1 uppercase tracking-tighter">{unit.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
 
                         <div className="border-t border-gray-200 pt-6"></div>

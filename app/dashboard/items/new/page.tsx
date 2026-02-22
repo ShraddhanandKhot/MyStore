@@ -9,6 +9,11 @@ type Store = {
     store_name: string
 }
 
+type Category = {
+    id: string
+    name: string
+}
+
 function AddItemPageContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -22,6 +27,12 @@ function AddItemPageContent() {
     const [description, setDescription] = useState("")
     const [price, setPrice] = useState("")
     const [template, setTemplate] = useState("modern")
+    const [categories, setCategories] = useState<Category[]>([])
+    const [categoryId, setCategoryId] = useState("")
+    const [saleTimerEnabled, setSaleTimerEnabled] = useState(false)
+    const [saleTimerHours, setSaleTimerHours] = useState("0")
+    const [saleTimerMinutes, setSaleTimerMinutes] = useState("0")
+    const [saleTimerSeconds, setSaleTimerSeconds] = useState("0")
 
     const [loading, setLoading] = useState(false)
 
@@ -55,6 +66,27 @@ function AddItemPageContent() {
             setStoreId(queryStoreId)
         }
     }, [queryStoreId])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            if (!storeId) {
+                setCategories([])
+                return
+            }
+
+            const { data, error } = await supabase
+                .from("categories")
+                .select("id, name")
+                .eq("store_id", storeId)
+                .order("name", { ascending: true })
+
+            if (!error && data) {
+                setCategories(data)
+            }
+        }
+
+        fetchCategories()
+    }, [storeId])
 
     const uploadItem = async () => {
         if (!storeId || files.length === 0 || !name || !price) {
@@ -94,6 +126,11 @@ function AddItemPageContent() {
             description,
             price: Number(price),
             template: template,
+            category_id: categoryId || null,
+            sale_timer_enabled: saleTimerEnabled,
+            sale_timer_hours: Number(saleTimerHours),
+            sale_timer_minutes: Number(saleTimerMinutes),
+            sale_timer_seconds: Number(saleTimerSeconds),
         })
 
         setLoading(false)
@@ -159,6 +196,22 @@ function AddItemPageContent() {
                 />
 
                 <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Category (Optional)</label>
+                    <select
+                        value={categoryId}
+                        onChange={(e) => setCategoryId(e.target.value)}
+                        className="w-full border px-3 py-2 rounded bg-white text-black"
+                    >
+                        <option value="">Select Category</option>
+                        {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Product Page Template</label>
                     <select
                         value={template}
@@ -169,6 +222,55 @@ function AddItemPageContent() {
                         <option value="classic">Classic (Clean, Serif)</option>
                         <option value="minimal">Minimal (Monospace, Stark)</option>
                     </select>
+                </div>
+
+                <div className="p-4 border border-orange-100 rounded-lg bg-orange-50/30 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-gray-800">Enable Sale Ending Clock</label>
+                        <input
+                            type="checkbox"
+                            checked={saleTimerEnabled}
+                            onChange={(e) => setSaleTimerEnabled(e.target.checked)}
+                            className="w-4 h-4 accent-black"
+                        />
+                    </div>
+
+                    {saleTimerEnabled && (
+                        <div className="grid grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                                <label className="text-[10px] uppercase font-bold text-gray-400">Hours</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={saleTimerHours}
+                                    onChange={(e) => setSaleTimerHours(e.target.value)}
+                                    className="w-full border px-2 py-1.5 rounded text-sm bg-white"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] uppercase font-bold text-gray-400">Mins</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="59"
+                                    value={saleTimerMinutes}
+                                    onChange={(e) => setSaleTimerMinutes(e.target.value)}
+                                    className="w-full border px-2 py-1.5 rounded text-sm bg-white"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] uppercase font-bold text-gray-400">Secs</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="59"
+                                    value={saleTimerSeconds}
+                                    onChange={(e) => setSaleTimerSeconds(e.target.value)}
+                                    className="w-full border px-2 py-1.5 rounded text-sm bg-white"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <input

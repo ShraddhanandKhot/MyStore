@@ -15,7 +15,11 @@ const templates: any = {
 // Server Component
 export const revalidate = 0
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
   const subdomain = await getSubdomain()
 
   /* ======================================================
@@ -75,9 +79,16 @@ export default async function Home() {
     )
   }
 
+  // Fetch Categories
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("id, name")
+    .eq("store_id", store.id)
+    .order("name", { ascending: true })
+
   const { data: items } = await supabase
     .from("items")
-    .select("id, image_url, name, description, price, created_at")
+    .select("id, image_url, name, description, price, created_at, category_id")
     .eq("store_id", store.id)
     .order("created_at", { ascending: false })
 
@@ -85,5 +96,13 @@ export default async function Home() {
 
   const DTemplate = templates[store.template] || templates.classic
 
-  return <DTemplate store={store} items={items || []} />
+  return (
+    <DTemplate
+      store={store}
+      items={items || []}
+      categories={categories || []}
+      initialSearch={typeof searchParams.search === 'string' ? searchParams.search : ""}
+      initialCategory={typeof searchParams.category === 'string' ? searchParams.category : null}
+    />
+  )
 }
